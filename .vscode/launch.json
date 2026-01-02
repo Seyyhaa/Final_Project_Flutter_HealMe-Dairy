@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "healme_dairy",
+            "cwd": "healme_dairy",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "healme_dairy (profile mode)",
+            "cwd": "healme_dairy",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "healme_dairy (release mode)",
+            "cwd": "healme_dairy",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}
