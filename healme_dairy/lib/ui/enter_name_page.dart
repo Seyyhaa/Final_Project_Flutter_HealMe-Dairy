@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:healme_dairy/models/users_pref.dart';
-import 'package:healme_dairy/ui/home_page.dart';
+import 'package:healme_dairy/ui/healme_tab.dart';
+import 'package:healme_dairy/ui/tabs/home_page.dart';
 
 class EnterNamePage extends StatefulWidget {
   const EnterNamePage({super.key});
@@ -20,7 +21,7 @@ class _EnterNamePageState extends State<EnterNamePage> {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          MaterialPageRoute(builder: (context) => const HealmeTab(tabs: '',initialTab: AppTab.homeTab,)),
         );
       }
     } else {

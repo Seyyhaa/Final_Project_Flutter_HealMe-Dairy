@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:healme_dairy/ui/enter_name_page.dart';
+// import 'package:healme_dairy/ui/enter_name_page.dart';
 import 'package:healme_dairy/ui/spash_page.dart';
 
 void main() => runApp(MyApp());
