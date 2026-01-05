@@ -24,7 +24,7 @@
 //       ),
 //     ],
 //     11: [
-//       DiagnosticRule(
+//       DiagnosticRule(  
 //         symptomId: 11,
 //         checkItemId: 3,
 //         threshold: 0,
@@ -117,7 +117,7 @@
 // }
 
 import 'package:healme_dairy/models/diagnostic_rule.dart';
-
+import 'package:healme_dairy/models/tracker_item.dart';
 import '../database/database_support.dart';
 
 class LogicEngine {
@@ -160,64 +160,79 @@ class LogicEngine {
     ),
   ];
 
+
+
   Future<String> analyze(int symptomId) async {
     final db = DatabaseSupport.instance;
     for (var rule in _rules) {
-      if (rule.symptomId == symptomId) {
-        int countToday = await db.getCountToday(rule.activityId);
-        if (countToday > 0) {
-          return "Expert Insight: ${rule.message}";
-        }
-      }
+  if (rule.symptomId == symptomId) {
+    var logs = await db.getTodayLogsForActivity(rule.activityId);
+
+    if (logs.isNotEmpty) {
+      // Access object properties if needed
+      return "Flash Detected: ${rule.message}";
     }
+  }
+}
     return await smartAnalysis(symptomId, db);
   }
 
-  Future<String> smartAnalysis(int symptomId, DatabaseSupport db) async {
-    List<String> sickDays = await db.getDatesForSymptom(symptomId);
-    int totalSickDays = sickDays.length;
-    if (totalSickDays < 3) {
-      return "Not enough data yet.";
-    }
-    Map<String, int> suspectsOnSickDays = {};
-    Map<String, int> suspectIds = {};
-    for (String date in sickDays) {
-      var activities = await db.getActivitiesOnDate(date);
-      for (var row in activities) {
-        String name = row['name'] as String;
-        int id = row['id'] as int;
-        suspectsOnSickDays[name] = (suspectsOnSickDays[name] ?? 0) + 1;
-        suspectIds[name] = id;
-      }
-    }
-    if (suspectsOnSickDays.isEmpty) {
-      return "No Engough Data to find the cause.";
-    }
-    String primeSuspect = "";
-    double highestRisk = 0;
-    for (var entry in suspectsOnSickDays.entries) {
-      String name = entry.key;
-      int sickCooccurrence = entry.value;
-      int id = suspectIds[name]!;
-      int totalHistory = await db.getGlobalFrequency(id);
-      if (totalHistory == 0) continue;
-      double risk = sickCooccurrence / totalHistory;
-      double consistency = sickCooccurrence / totalSickDays;
-      if (risk > highestRisk && consistency > 0.3) {
-        highestRisk = risk;
-        primeSuspect = name;
-      }
-    }
-    if (highestRisk > 0.75) {
-      return "High Probability Trigger: $primeSuspect\n\n"
-          "Pattern: When you log '$primeSuspect', you report this symptom ${(highestRisk * 100).toStringAsFixed(0)}% of the time.\n"
-          "Advice: Try avoiding it tomorrow.";
-    } else if (highestRisk > 0.4) {
-      return "Possible Link: $primeSuspect\n\n"
-          "Pattern: There is a moderate connection (${(highestRisk * 100).toStringAsFixed(0)}%) between '$primeSuspect' and this symptom.";
-    } else {
-      return "Analysis Inconclusive.\n\n"
-          "Top Suspect: $primeSuspect, but the data is weak. Keep tracking!";
+}
+
+
+
+
+Future<String> smartAnalysis(int symptomId, DatabaseSupport db) async {
+  List<String> sickDays = await db.getDatesForSymptom(symptomId);
+  int totalSickDays = sickDays.length;
+  if (totalSickDays < 3) return "Not enough data yet.";
+
+  Map<TrackerItem, int> suspectsOnSickDays = {};
+
+  for (String date in sickDays) {
+    var activities = await db.getActivitiesOnDate(date);
+    for (var item in activities) {
+      suspectsOnSickDays[item] = (suspectsOnSickDays[item] ?? 0) + 1;
     }
   }
+
+  if (suspectsOnSickDays.isEmpty) return "No Enough Data to find the cause.";
+
+  TrackerItem? primeSuspect;
+  double highestRisk = 0;
+
+  for (var entry in suspectsOnSickDays.entries) {
+    TrackerItem item = entry.key;
+    int sickCooccurrence = entry.value;
+    var logs = await db.getLogsForItem(item.id);
+    int totalHistory = logs.length;
+    if (totalHistory == 0) continue;
+
+    double risk = sickCooccurrence / totalHistory;
+    double consistency = sickCooccurrence / totalSickDays;
+
+    if (risk > highestRisk && consistency > 0.3) {
+      highestRisk = risk;
+      primeSuspect = item;
+    }
+  }
+
+  if (primeSuspect == null) return "Analysis Inconclusive. No prime suspect found.";
+
+  double riskPercent = (highestRisk * 100).toDouble();
+
+  if (highestRisk > 0.75) {
+    return "High Probability Trigger: ${primeSuspect.name}\n\n"
+        "Pattern: When you log '${primeSuspect.name}', you report this symptom ${riskPercent.toStringAsFixed(0)}% of the time.\n"
+        "Advice: Try avoiding it tomorrow.";
+  } else if (highestRisk > 0.4) {
+    return "Possible Link: ${primeSuspect.name}\n\n"
+        "Pattern: There is a moderate connection (${riskPercent.toStringAsFixed(0)}%) between '${primeSuspect.name}' and this symptom.";
+  } else {
+    return "Analysis Inconclusive.\n\n"
+        "Top Suspect: ${primeSuspect.name}, but the data is weak. Keep tracking!";
+  }
+
+
+
 }

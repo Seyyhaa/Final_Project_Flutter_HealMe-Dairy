@@ -1,28 +1,25 @@
+import 'package:healme_dairy/models/tracker_item.dart';
+
 class DailyLog {
-  final int id;
+  final int? id;
   final DateTime date;
-  final int itemId;
+  final TrackerItem item;  
 
-  DailyLog({required this.id, required this.itemId, required this.date});
-
-
+  DailyLog({required this.id, required this.item, required this.date});
 
   factory DailyLog.fromMap(Map<String, dynamic> map) {
     return DailyLog(
       id: map['id'],
-      itemId: map['item_id'], 
-      date: DateTime.parse(map['date']), 
+      date: DateTime.parse(map['date']),
+      item: TrackerItem.fromMap(map), 
     );
   }
 
-
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
-      'item_id': itemId, 
-      'date': date.toIso8601String(), 
+      if (id != null) 'id': id,
+      'item_id': item.id,
+      'date': date.toIso8601String(),
     };
   }
 }
-
-
