@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
-// import 'package:healme_dairy/ui/enter_name_page.dart';
-import 'package:healme_dairy/ui/spash_page.dart';
+import 'package:healme_dairy/ui/screens/spash_page.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(const MyApp());
+}
 
-
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: SpashPage(),
- ); }
+    );
+  }
 }
