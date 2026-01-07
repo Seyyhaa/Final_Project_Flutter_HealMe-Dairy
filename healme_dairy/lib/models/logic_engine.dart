@@ -2,10 +2,12 @@ import 'package:healme_dairy/models/log_entry.dart';
 import 'package:healme_dairy/models/log_item.dart';
 
 class LogicEngine {
-  static String analyzeSymptomPattern(
-    List<LogEntry> logs,
-    LogItem targetSymptom,
-  ) {
+  final List<LogEntry> logs;
+  final LogItem targetSymptom;
+
+  LogicEngine({required this.logs, required this.targetSymptom});
+
+  String analyzeSymptomPattern() {
     final symptomDates = logs
         .where(
           (log) =>
@@ -14,6 +16,7 @@ class LogicEngine {
         )
         .map((log) => log.date)
         .toSet();
+
     if (symptomDates.isEmpty) {
       return "No enough data to analyze this symptom yet.";
     }
@@ -38,6 +41,7 @@ class LogicEngine {
     final sorted = activityFrequency.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     final top = sorted.first;
+
     return "When you had '${targetSymptom.label}', "
         "you most often did '${top.key}' (${top.value} times). "
         "This activity may be contributing to the symptom.";
